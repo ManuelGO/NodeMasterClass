@@ -6,13 +6,44 @@
 //dependencies:
 
 const http = require("http");
+const https = require("https");
 const url = require("url");
 const { StringDecoder } = require("string_decoder");
 const config = require('./config');
+const fs = require('fs');
 
-//The server should respond to all request with a string.
-const server = http.createServer((req, res) => {
-  //get the url and parse it;
+//instantiate the http server
+const httpServer = http.createServer((req, res) => {
+ unifiedServer(req, res);
+});
+
+//Start the server in port 3000:
+//test the server: curl localhost:3000
+
+httpServer.listen(config.httpPort, () => {
+  console.log(`Server listening on port ${config.httpPort}, environment ${config.envName}`);
+});
+
+//instantiate the https server
+let httpsServerOptions = {
+    'key': fs.readFileSync('./https/key.pem'),
+    'cert': fs.readFileSync('./https/cert.pem'),
+}
+const httpsServer = https.createServer(httpsServerOptions, (req, res)=>{
+    unifiedServer(req, res);
+})
+
+//Start the HTTPS server
+httpsServer.listen(config.httpsPort, () => {
+    console.log(`Server listening on port ${config.httpsPort}, environment ${config.envName}`);
+  });
+
+
+//All the server logic for both http and https server
+
+const unifiedServer = (req, res) => {
+
+     //get the url and parse it;
   let parsedUrl = url.parse(req.url, true);
 
   //get the path:
@@ -73,14 +104,8 @@ const server = http.createServer((req, res) => {
       console.log("response: ", payloadString);
     });
   });
-});
 
-//Start the server in port 3000:
-//test the server: curl localhost:3000
-
-server.listen(config.port, () => {
-  console.log(`Server listening on port ${config.port}, environment ${config.envName}`);
-});
+}
 
 //handlers:
 
