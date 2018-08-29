@@ -9,41 +9,45 @@ const http = require("http");
 const https = require("https");
 const url = require("url");
 const { StringDecoder } = require("string_decoder");
-const config = require('./config');
-const fs = require('fs');
+const config = require("./config");
+const fs = require("fs");
 
 //instantiate the http server
 const httpServer = http.createServer((req, res) => {
- unifiedServer(req, res);
+  unifiedServer(req, res);
 });
 
 //Start the server in port 3000:
 //test the server: curl localhost:3000
 
 httpServer.listen(config.httpPort, () => {
-  console.log(`Server listening on port ${config.httpPort}, environment ${config.envName}`);
+  console.log(
+    `Server listening on port ${config.httpPort}, environment ${config.envName}`
+  );
 });
 
 //instantiate the https server
 let httpsServerOptions = {
-    'key': fs.readFileSync('./https/key.pem'),
-    'cert': fs.readFileSync('./https/cert.pem'),
-}
-const httpsServer = https.createServer(httpsServerOptions, (req, res)=>{
-    unifiedServer(req, res);
-})
+  key: fs.readFileSync("./https/key.pem"),
+  cert: fs.readFileSync("./https/cert.pem")
+};
+const httpsServer = https.createServer(httpsServerOptions, (req, res) => {
+  unifiedServer(req, res);
+});
 
 //Start the HTTPS server
 httpsServer.listen(config.httpsPort, () => {
-    console.log(`Server listening on port ${config.httpsPort}, environment ${config.envName}`);
-  });
-
+  console.log(
+    `Server listening on port ${config.httpsPort}, environment ${
+      config.envName
+    }`
+  );
+});
 
 //All the server logic for both http and https server
 
 const unifiedServer = (req, res) => {
-
-     //get the url and parse it;
+  //get the url and parse it;
   let parsedUrl = url.parse(req.url, true);
 
   //get the path:
@@ -104,8 +108,7 @@ const unifiedServer = (req, res) => {
       console.log("response: ", payloadString);
     });
   });
-
-}
+};
 
 //handlers:
 
@@ -113,12 +116,13 @@ const handlers = {};
 handlers.notFound = (data, callback) => {
   callback(404);
 };
-handlers.sample = (data, callback) => {
-  //callback a http status code and a payload object.
-  callback(406, { name: "manuel" });
+
+//Ping handler:
+handlers.ping = (data, callback) => {
+  callback(200);
 };
 
 //Router:
 const router = {
-  sample: handlers.sample
+  ping: handlers.ping
 };
