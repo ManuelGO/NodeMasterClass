@@ -111,7 +111,6 @@ handlers._users.get = (data, callback) => {
     let token =
       typeof data.headers.token === "string" ? data.headers.token : false;
     // verify that thte given token is valid for the phone number.
-
     handlers._tokens.verifyToken(token, phone, tokenIsValid => {
       if (tokenIsValid) {
         // Lookup the user
@@ -428,12 +427,14 @@ handlers._tokens.verifyToken = (id, phone, callback) => {
   // Lookup the token
   _data.read("tokens", id, (err, tokenData) => {
     if (!err && tokenData) {
-      // Check tath the token is for the given user and has not expired.
+      // Check that the token is for the given user and has not expired.
       if (tokenData.phone === phone && tokenData.expires > Date.now()) {
         callback(true);
       } else {
         callback(false);
       }
+    } else {
+      callback(false);
     }
   });
 };
