@@ -5,6 +5,7 @@
 //Dependencies.
 const _data = require("./data");
 const helpers = require("./helpers");
+const config = require("../config");
 //Define the handlers:
 const handlers = {};
 
@@ -349,7 +350,6 @@ handlers._tokens.get = (data, callback) => {
 // Required data: id, extend
 // Optional data: none
 handlers._tokens.put = (data, callback) => {
-  console.log(data);
   let requiredId = data.payload.id;
   let requiredExtend = data.payload.extend;
   let id =
@@ -437,6 +437,136 @@ handlers._tokens.verifyToken = (id, phone, callback) => {
       callback(false);
     }
   });
+};
+
+//CHECKS:
+
+handlers.checks = (data, callback) => {
+  let acceptableMethods = ["post", "get", "put", "delete"];
+  if (acceptableMethods.includes(data.method)) {
+    handlers._checks[data.method](data, callback);
+  } else {
+    callback(405);
+  }
+};
+
+// Container for all the checks methods
+
+handlers._checks = {};
+
+// Checks - post
+// Required data: protocol, url, method, sucessCodes, timoutSeconds.
+// Optional data: none
+
+handlers._checks.post = (data, callback) => {
+  // Validate inputs
+  console.log(data);
+  let protocol =
+    typeof data.payload.protocol === "string" &&
+    ["https", "http"].includes(data.payload.protocol)
+      ? data.payload.protocol
+      : false;
+
+  let url =
+    typeof data.payload.url === "string" && data.payload.url.trim().length > 0
+      ? data.payload.url.trim()
+      : false;
+
+  let method =
+    typeof data.payload.method === "string" &&
+    ["post", "get", "put", "delete"].includes(data.payload.method)
+      ? data.payload.method
+      : false;
+
+  let successCodes =
+    typeof data.payload.successCodes === "object" &&
+    data.payload.successCodes instanceof Array &&
+    data.payload.successCodes.length > 0
+      ? data.payload.successCodes
+      : false;
+
+  let timeoutSeconds =
+    typeof data.payload.timeoutSeconds === "number" &&
+    data.payload.timeoutSeconds % 1 === 0 &&
+    data.payload.timeoutSeconds >= 1 &&
+    data.payload.timeoutSeconds <= 5
+      ? data.payload.timeoutSeconds
+      : false;
+
+  if (protocol && url && method && successCodes && timeoutSeconds) {
+    // Get the token form the headers.
+    let token =
+      typeof data.headers.token == "string" ? data.headers.token : false;
+
+    // Lookup the user by reading the token
+    _data.read("tokens", token, (err, tokenData) => {
+      if (!err && tokenData) {
+        let userPhone = tokenData.phone;
+
+        // Lookup the user data:
+        _data.read("users", userPhone, (err, userData) => {
+          if (!err && userData) {
+            let userChecks =
+              typeof userData.checks == "object" &&
+              userData.checks instanceof Array
+                ? userData.checks
+                : [];
+
+            //verify that the user has less than the number of max-checks-per-user
+            if (userChecks.length < config.maxChecks) {
+              //Create a random id for the check
+              let checkId = helpers.createRandomString(20);
+
+              //Create the check object, and include the user's phone.
+              let checkObject = {
+                id: checkId,
+                userPhohe: userPhone,
+                protocol: protocol,
+                url: url,
+                method: method,
+                successCodes: successCodes,
+                timeoutSeconds: timeoutSeconds
+              };
+
+              //Save the oject
+
+              _data.create("checks", checkId, checkObject, err => {
+                if (!err) {
+                  // Add the check id to the user's object
+                  userData.checks = userChecks;
+                  userData.checks.push(checkId);
+
+                  //save the new user data
+                  _data.update("users", userPhone, userData, err => {
+                    if (!err) {
+                      /// Return the data about the new check
+                      callback(200, checkObject);
+                    } else {
+                      callback(500, {
+                        Error: "Could not update the user with the new check"
+                      });
+                    }
+                  });
+                } else {
+                  callback(500, { Error: "Could not create the new check" });
+                }
+              });
+            } else {
+              callback(400, {
+                Error: "The user already has the maximun number of checks"
+              });
+            }
+          } else {
+            callback(403);
+          }
+        });
+      } else {
+        callback(403);
+      }
+    });
+  } else {
+    callback(400, { Error: "Missing required inputs, or inputs are invalid" });
+  }
 };
 
 //Not found handler
