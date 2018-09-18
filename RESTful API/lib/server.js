@@ -77,7 +77,6 @@ server.unifiedServer = (req, res) => {
       typeof server.router[trimmedPath] !== "undefined"
         ? server.router[trimmedPath]
         : handlers.notFound;
-    console.log(choosenHandler);
     //Construct the data object to send to the handler:
     let data = {
       trimmedPath,
@@ -121,6 +120,7 @@ server.init = () => {
   // Start the HTTP server
   server.httpServer.listen(config.httpPort, () => {
     console.log(
+      "\x1b[36m%s\x1b[0m",
       `Server listening on port ${config.httpPort}, environment ${
         config.envName
       }`
@@ -130,6 +130,7 @@ server.init = () => {
   //Start the HTTPS server
   server.httpsServer.listen(config.httpsPort, () => {
     console.log(
+      "\x1b[35m%s\x1b[0m",
       `Server listening on port ${config.httpsPort}, environment ${
         config.envName
       }`
