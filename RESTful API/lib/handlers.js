@@ -5,7 +5,7 @@
 //Dependencies.
 const _data = require("./data");
 const helpers = require("./helpers");
-const config = require("../config");
+const config = require("./config");
 //Define the handlers:
 const handlers = {};
 
@@ -555,7 +555,7 @@ handlers._checks.post = (data, callback) => {
               //Create the check object, and include the user's phone.
               let checkObject = {
                 id: checkId,
-                userPhohe: userPhone,
+                userPhone: userPhone,
                 protocol: protocol,
                 url: url,
                 method: method,
@@ -627,7 +627,7 @@ handlers._checks.get = (data, callback) => {
         // verify that thte given token is valid and belong
         handlers._tokens.verifyToken(
           token,
-          checkData.userPhohe,
+          checkData.userPhone,
           tokenIsValid => {
             if (tokenIsValid) {
               // Return the check data:
@@ -702,7 +702,7 @@ handlers._checks.put = (data, callback) => {
           // Check the token is valid
           handlers._tokens.verifyToken(
             token,
-            checkData.userPhohe,
+            checkData.userPhone,
             tokenIsValid => {
               if (tokenIsValid) {
                 // UPDATE the check where necessary
@@ -767,14 +767,14 @@ handlers._checks.delete = (data, callback) => {
 
         handlers._tokens.verifyToken(
           token,
-          checkData.userPhohe,
+          checkData.userPhone,
           tokenIsValid => {
             if (tokenIsValid) {
               //Delete the check
               _data.delete("checks", id, err => {
                 if (!err) {
                   // Lookup the user
-                  _data.read("users", checkData.userPhohe, (err, userData) => {
+                  _data.read("users", checkData.userPhone, (err, userData) => {
                     if (!err && userData) {
                       let userChecks =
                         typeof userData.checks == "object" &&
@@ -790,7 +790,7 @@ handlers._checks.delete = (data, callback) => {
                         //Resave the user data.
                         _data.update(
                           "users",
-                          checkData.userPhohe,
+                          checkData.userPhone,
                           userData,
                           err => {
                             if (!err) {
