@@ -19,10 +19,24 @@ const handlers = {};
 handlers.index = (data, callback) => {
   // Reject any request that isn't a GET
   if (data.method === "get") {
+    // Prepare data for interpolation
+    let templateData = {
+      "head.title": "This is the title",
+      "head.description": "This the description",
+      "body.title": "Hola mundo",
+      "body.class": "index"
+    };
     // Read in a template as a string.
-    helpers.getTemplate("index", (err, str) => {
+    helpers.getTemplate("index", templateData, (err, str) => {
       if (!err && str) {
-        callback(200, str, "html");
+        // Add the universal header and footer.
+        helpers.addUniversalTemplates(str, templateData, (err, str) => {
+          if (!err && str) {
+            callback(200, str, "html");
+          } else {
+            callback(500, undefined, "html");
+          }
+        });
       } else {
         callback(500, undefined, "html");
       }
