@@ -1,27 +1,29 @@
-/**
- * Archivo principal para el servidor.
- * Primary file for the server
+/*
+ * Primary file for API
+ *
  */
+
 // Dependencies
-const server = require("./lib/server");
-const workers = require("./lib/workers");
+var server = require('./lib/server');
+var workers = require('./lib/workers');
 
 // Declare the app
-const app = {};
+var app = {};
 
 // Init function
+app.init = function(){
 
-app.init = () => {
-  //STart the server
+  // Start the server
   server.init();
 
-  //STart the workers
+  // Start the workers
   workers.init();
+
 };
 
-// Execute
+// Self executing
 app.init();
 
-//Export the app
 
+// Export the app
 module.exports = app;

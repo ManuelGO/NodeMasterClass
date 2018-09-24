@@ -1,65 +1,56 @@
-/**
- * Create an export configuration variables.
- * To generate the files for https server sec:
- * openssl req -newkey rsa:2048 -new -nodes -x509 -days -3650 -keyout key.pem -out cert.pem
+/*
+ * Create and export configuration variables
+ *
  */
 
-//Container for all variables.
+// Container for all environments
+var environments = {};
 
-const environments = {};
-
-//Staging (default) environment
+// Staging (default) environment
 environments.staging = {
-  httpPort: 3000,
-  httpsPort: 3001,
-  envName: "staging",
-  hashingSecret: "thisIsASecret",
-  maxChecks: 5,
-  twilio: {
-    accountSid: "ACfa6b3e5bf8004c25f676d8046fcfad7f",
-    authToken: "972f7bece88b2407527382042836e479",
-    fromPhone: "+34931070804"
+  'httpPort' : 3000,
+  'httpsPort' : 3001,
+  'envName' : 'staging',
+  'hashingSecret' : 'thisIsASecret',
+  'maxChecks' : 5,
+  'twilio' : {
+    'accountSid' : 'ACb32d411ad7fe886aac54c665d25e5c5d',
+    'authToken' : '9455e3eb3109edc12e3d8c92768f7a67',
+    'fromPhone' : '+15005550006'
   },
-  templateGlobals: {
-    appName: "UptimeChecker",
-    companyName: "N/A Inc",
-    yearCreated: "2018",
-    baseUrl: "http://localhost:3000/"
+  'templateGlobals' : {
+    'appName' : 'UptimeChecker',
+    'companyName' : 'NotARealCompany, Inc.',
+    'yearCreated' : '2018',
+    'baseUrl' : 'http://localhost:3000/'
   }
 };
 
-//Production environment
-
+// Production environment
 environments.production = {
-  httpPort: 5000,
-  httpsPort: 5001,
-  envName: "production",
-  hashingSecret: "thisIsAlsoASecret",
-  maxChecks: 5,
-  twilio: {
-    accountSid: "ACfa6b3e5bf8004c25f676d8046fcfad7f",
-    authToken: "972f7bece88b2407527382042836e479",
-    fromPhone: "+34931070804"
+  'httpPort' : 5000,
+  'httpsPort' : 5001,
+  'envName' : 'production',
+  'hashingSecret' : 'thisIsAlsoASecret',
+  'maxChecks' : 10,
+  'twilio' : {
+    'accountSid' : '',
+    'authToken' : '',
+    'fromPhone' : ''
   },
-  templateGlobals: {
-    appName: "UptimeChecker",
-    companyName: "N/A Inc",
-    yearCreated: "2018",
-    baseUrl: "http://localhost:5000/"
+  'templateGlobals' : {
+    'appName' : 'UptimeChecker',
+    'companyName' : 'NotARealCompany, Inc.',
+    'yearCreated' : '2018',
+    'baseUrl' : 'http://localhost:5000/'
   }
 };
 
-//Determine which evironment was passed as command-line argument.
-let currentEnvironment =
-  typeof process.env.NODE_ENV === "string"
-    ? process.env.NODE_ENV.toLowerCase()
-    : "";
+// Determine which environment was passed as a command-line argument
+var currentEnvironment = typeof(process.env.NODE_ENV) == 'string' ? process.env.NODE_ENV.toLowerCase() : '';
 
-//Check that the current evironment is one of the above, if not, default to staging.
-let environmentToExport =
-  typeof environments[currentEnvironment] === "object"
-    ? environments[currentEnvironment]
-    : environments.staging;
+// Check that the current environment is one of the environments above, if not default to staging
+var environmentToExport = typeof(environments[currentEnvironment]) == 'object' ? environments[currentEnvironment] : environments.staging;
 
-//Export the module
+// Export the module
 module.exports = environmentToExport;
